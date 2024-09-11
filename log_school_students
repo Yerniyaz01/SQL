@@ -1,0 +1,16 @@
+-- выгрузка входов по лог учеников по школе
+SELECT s.id          AS school_id,
+       s.name        AS name,
+       COUNT(lss.id) AS count_student
+FROM dwh.rms_schools s
+         JOIN dwh.omg_departments d ON s.department_id = d.id
+         LEFT JOIN dwh.omg_contingent c ON c.organization_id = s.id
+         LEFT JOIN (SELECT lss.id, lss.user_id
+                    FROM dwh.osl_log_session_statuses lss
+                    WHERE lss.created_at BETWEEN '2024-01-01 00:00:00' AND '2024-08-01 00:00:00'
+                      AND lss.project_kind = 'onlinemektep') AS lss ON lss.user_id = c.user_id
+WHERE s.deleted_at IS NULL
+  AND s.bin = '991240001329'
+  AND s.organization_kind = 'school'
+  AND api_version <> 'v4'
+GROUP BY s.id, s.name;
